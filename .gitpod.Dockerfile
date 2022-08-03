@@ -9,9 +9,11 @@ ARG JUST_VERSION=0.1.10
 RUN curl -L -o just.tar.gz https://github.com/just-js/just/archive/$JUST_VERSION.tar.gz
 RUN tar -zxvf just.tar.gz
 WORKDIR /home/gitpod/.just/just-$JUST_VERSION
-RUN make clean runtime
-RUN sudo make install install-debug
+RUN sudo chown -R gitpod:gitpod /home/gitpod/.just
 RUN make libs
+RUN make modules
+RUN make runtime
+RUN sudo make install install-debug
 RUN sudo mkdir -p /usr/local/lib/just
 RUN make -C modules/sqlite deps
 WORKDIR /home/gitpod/.just/just-$JUST_VERSION/modules/sqlite/deps/sqlite/build
