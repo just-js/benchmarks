@@ -1,6 +1,3 @@
-assets
-tools
-results
 deps
 node_modules
 02-sqlite/bench-c
@@ -9,4 +6,5 @@ node_modules
 core
 *.sh
 package-lock.json
-README.md
+.gitpod.*
+scratch
