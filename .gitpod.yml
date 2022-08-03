@@ -4,7 +4,10 @@ tasks:
   - init: |
       cd 02-sqlite
       tar -zxvf node_modules.tar.gz
+      rm node_modules.tar.gz
       gcc -O3 -c -Wall -Wextra -Ideps/sqlite/build -o bench.o bench.c
       gcc -static -mtune=native -march=native -flto -pthread -m64 -s -o bench-c bench.o $JUST_HOME/modules/sqlite/deps/sqlite/build/.libs/libsqlite3.a
+      rm bench.o
       just build --clean --cleanall --static bench-just.js
+      cp /home/gitpod/.just/$JUST_VERSION/bench-just ./
       deno bundle bench-deno.js > bench-deno-bundle.js

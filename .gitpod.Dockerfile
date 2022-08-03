@@ -10,6 +10,7 @@ RUN curl -L -o just.tar.gz https://github.com/just-js/just/archive/$JUST_VERSION
 RUN tar -zxvf just.tar.gz
 WORKDIR /home/gitpod/.just/just-$JUST_VERSION
 RUN make clean runtime
+RUN sudo make install install-debug
 RUN make libs
 RUN sudo mkdir -p /usr/local/lib/just
 RUN make -C modules/sqlite deps
@@ -24,7 +25,6 @@ RUN make -C modules/sqlite library vfs
 RUN sudo make -C modules/sqlite install
 RUN make -C modules/ffi library
 RUN sudo make -C modules/ffi install
-RUN mkdir -p /home/gitpod/.just/bin && cp just /home/gitpod/.just/bin/
 WORKDIR /home/gitpod/build
 RUN sudo chown gitpod:gitpod /home/gitpod/build
 ARG NODE_VERSION=16.16.0
@@ -34,10 +34,9 @@ RUN mkdir -p /home/gitpod/.node/bin && cp node-v$NODE_VERSION-linux-x64/bin/node
 ENV NODE_ENV=production
 WORKDIR /home/gitpod
 RUN rm -fr build
-ENV PATH="${PATH}:/home/gitpod/.deno/bin/"
-ENV PATH="${PATH}:/home/gitpod/.bun/bin/"
-ENV PATH="${PATH}:/home/gitpod/.node/bin/"
-ENV PATH="${PATH}:/home/gitpod/.just/bin/"
+ENV PATH="${PATH}:/home/gitpod/.deno/bin"
+ENV PATH="${PATH}:/home/gitpod/.bun/bin"
+ENV PATH="${PATH}:/home/gitpod/.node/bin"
 RUN sudo apt clean all
 RUN sudo rm -fr /var/lib/apt/lists
 ENV JUST_VERSION=$JUST_VERSION
