@@ -1,10 +1,8 @@
 const sqlite = require('lib/just/sqlite-ffi.js')
 const { open2, exec, prepareStatement, v2 } = sqlite
 
-const defaultFlags = v2.SQLITE_OPEN_READWRITE | 
-  v2.SQLITE_OPEN_PRIVATECACHE | 
-  v2.SQLITE_OPEN_NOMUTEX | 
-  v2.SQLITE_OPEN_CREATE
+const defaultFlags = v2.SQLITE_OPEN_READWRITE | v2.SQLITE_OPEN_PRIVATECACHE | 
+  v2.SQLITE_OPEN_NOMUTEX | v2.SQLITE_OPEN_CREATE | v2.SQLITE_OPEN_MEMORY
 const db = open2(':memory:', defaultFlags)
 
 exec(db, 'PRAGMA auto_vacuum = none')
@@ -22,9 +20,7 @@ function bench (query) {
   for (let i = 0; i < runs; i++) query()
   const elapsed = Date.now() - start
   const rate = Math.floor(runs / (elapsed / 1000))
-  const { rss } = just.memoryUsage()
-  just.print(`time ${elapsed} ms rate ${rate} rss ${rss}`)
-  if (global.gc) global.gc()
+  just.print(`time ${elapsed} ms rate ${rate}`)
   if (--total) just.sys.nextTick(() => bench(query))
 }
 

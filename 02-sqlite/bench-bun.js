@@ -1,5 +1,4 @@
 import { Database, constants } from "bun:sqlite"
-import { memoryUsage } from "bun:jsc"
 
 const defaultFlags = constants.SQLITE_OPEN_READWRITE | 
   constants.SQLITE_OPEN_PRIVATECACHE | 
@@ -20,8 +19,7 @@ function bench (query) {
   for (let i = 0; i < runs; i++) query()
   const elapsed = Date.now() - start
   const rate = Math.floor(runs / (elapsed / 1000))
-  const { current } = memoryUsage()
-  console.log(`time ${elapsed} ms rate ${rate} rss ${current}`)
+  console.log(`time ${elapsed} ms rate ${rate}`)
   if (--total) process.nextTick(() => bench(query))
 }
 

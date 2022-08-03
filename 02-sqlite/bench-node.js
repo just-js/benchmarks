@@ -19,8 +19,7 @@ function bench (query) {
   for (let i = 0; i < runs; i++) query()
   const elapsed = Date.now() - start
   const rate = Math.floor(runs / (elapsed / 1000))
-  const { rss } = process.memoryUsage()
-  console.log(`time ${elapsed} ms rate ${rate} rss ${rss}`)
+  console.log(`time ${elapsed} ms rate ${rate}`)
   if (--total) process.nextTick(() => bench(query))
 }
 

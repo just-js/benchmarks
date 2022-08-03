@@ -1,13 +1,29 @@
 const { fs } = just.library('fs')
 const { net } = just.library('net')
 
-const fileFlags = {
-  SQLITE_OPEN_READONLY: 0x01,
-  SQLITE_OPEN_READWRITE: 0x02,
-  SQLITE_OPEN_CREATE: 0x04,
-  SQLITE_OPEN_MAIN_DB: 0x100,
-  SQLITE_OPEN_WAL: 0x80000,
-  SQLITE_OPEN_MAIN_JOURNAL: 0x800
+const v2 = {
+  SQLITE_OPEN_READONLY        : 0x00000001,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_READWRITE       : 0x00000002,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_CREATE          : 0x00000004,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_DELETEONCLOSE   : 0x00000008,  /* VFS only */
+  SQLITE_OPEN_EXCLUSIVE       : 0x00000010,  /* VFS only */
+  SQLITE_OPEN_AUTOPROXY       : 0x00000020,  /* VFS only */
+  SQLITE_OPEN_URI             : 0x00000040,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_MEMORY          : 0x00000080,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_MAIN_DB         : 0x00000100,  /* VFS only */
+  SQLITE_OPEN_TEMP_DB         : 0x00000200,  /* VFS only */
+  SQLITE_OPEN_TRANSIENT_DB    : 0x00000400,  /* VFS only */
+  SQLITE_OPEN_MAIN_JOURNAL    : 0x00000800,  /* VFS only */
+  SQLITE_OPEN_TEMP_JOURNAL    : 0x00001000,  /* VFS only */
+  SQLITE_OPEN_SUBJOURNAL      : 0x00002000,  /* VFS only */
+  SQLITE_OPEN_SUPER_JOURNAL   : 0x00004000,  /* VFS only */
+  SQLITE_OPEN_NOMUTEX         : 0x00008000,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_FULLMUTEX       : 0x00010000,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_SHAREDCACHE     : 0x00020000,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_PRIVATECACHE    : 0x00040000,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_WAL             : 0x00080000,  /* VFS only */
+  SQLITE_OPEN_NOFOLLOW        : 0x01000000,  /* Ok for sqlite3_open_v2() */
+  SQLITE_OPEN_EXRESCODE       : 0x02000000  /* Extended result codes */
 }
 
 const walFlags = {
@@ -174,87 +190,21 @@ function CString (str) {
 
 const environment = {
   wasm_http_shm_map: (i0, region, size, extend, o0) => {
-    const path = ReadCString(heap, i0)
-    const name = getName(path)
-    if (extend === 0) {
-      heap[o0] = 0
-      return constants.SQLITE_OK
-    }
-    const database = databases[name]
-    if (database.regions[region]) {
-      const p = new Pointer(memory, o0)
-      p.set(database.regions[region].ptr)
-    } else {
-      const ptr = ex.malloc(size)
-      database.regions[region] = { ptr, bytes: heap.subarray(ptr, ptr + size) }
-      const p = new Pointer(memory, o0)
-      p.set(ptr)
-    }
     return constants.SQLITE_OK
   },
   wasm_http_shm_lock: (i0, offset, n, flags) => {
-    const path = ReadCString(heap, i0)
-    const name = getName(path)
-    const database = databases[name]
-    if (database.regions[0]) {
-      const { bytes } = database.regions[0]
-      if (flags & walFlags.SQLITE_SHM_UNLOCK) {
-        bytes[120 + offset] = walFlags.F_UNLCK
-      } else if (flags & walFlags.SQLITE_SHM_SHARED) {
-        bytes[120 + offset] = walFlags.F_RDLCK
-      } else {
-        bytes[120 + offset] = walFlags.F_WRLCK
-      }
-    }
     return constants.SQLITE_OK
   },
   wasm_http_open: (i0, flags) => {
-    const path = ReadCString(heap, i0)
-    const name = getName(path)
-    const database = databases[name]
-    database.files[path].fd = fs.open(path, fs.O_RDWR | fs.O_CREAT | fs.O_APPEND)
     return flags
   },
   wasm_http_file_stat: (i0, o0, o1) => {
-    const path = ReadCString(heap, i0)
-    const name = getName(path)
-    const access = new Pointer(memory, o0)
-    const size = new Pointer(memory, o1)
-    size.set(Number(just.fs.getStat(path).size))
-    access.set(vfsFlags.HTTP_FILE_READWRITE)
-    if (!databases[name]) {
-      databases[name] = {
-        name,
-        regions: [],
-        files: {
-          [path]: { size: size.get(), flags: access.get() }
-        }
-      }
-    } else {
-      if (!databases[name].files[path]) {
-        databases[name].files[path] = { size: size.get(), flags: access.get() }
-      } else {
-        databases[name].files[path].size = size.get()
-      }
-    }
     return constants.SQLITE_OK
   },
   wasm_http_get_bytes: (i0, i1, start, end) => {
-    const path = ReadCString(heap, i0)
-    const name = getName(path)
-    const database = databases[name]
-    const file = database.files[path]
-    const rc = fs.lseek(file.fd, Number(start))
-    const bytes = net.read(file.fd, heap.buffer, i1, Number(end - start))
     return constants.SQLITE_OK
   },
   wasm_http_set_bytes: (i0, i1, amount, offset) => {
-    const path = ReadCString(heap, i0)
-    const name = getName(path)
-    const database = databases[name]
-    const file = database.files[path]
-    const rc = fs.lseek(file.fd, Number(offset))
-    net.write(file.fd, heap.buffer, Number(amount), i1)
     return constants.SQLITE_OK
   },
   wasm_http_shm_unmap: (i0, deleteFlag) => {},
@@ -330,13 +280,14 @@ const stack = {
 ex.sqlite3_initialize()
 const esp = stack.save()
 const ptr = new Pointer(memory, stack.alloc(4))
-const rc = ex.sqlite3_open_v2(CString(dbName), ptr.p, fileFlags.SQLITE_OPEN_READWRITE | fileFlags.SQLITE_OPEN_CREATE, CString('http'))
+const defaultFlags = v2.SQLITE_OPEN_READWRITE | v2.SQLITE_OPEN_PRIVATECACHE | 
+  v2.SQLITE_OPEN_NOMUTEX | v2.SQLITE_OPEN_CREATE | v2.SQLITE_OPEN_MEMORY
+const rc = ex.sqlite3_open_v2(CString(dbName), ptr.p, defaultFlags, CString('http'))
 const handle = ptr.get()
 stack.restore(esp)
 executeSQL(handle, 'PRAGMA auto_vacuum = none')
 executeSQL(handle, 'PRAGMA temp_store = memory')
 executeSQL(handle, 'PRAGMA locking_mode = exclusive')
-
 executeSQL(handle, 'PRAGMA user_version = 100')
 
 const sql = 'pragma user_version'
@@ -367,9 +318,8 @@ function bench (query) {
   for (let i = 0; i < runs; i++) query()
   const elapsed = Date.now() - start
   const rate = Math.floor(runs / (elapsed / 1000))
-  const { rss } = just.memoryUsage()
-  just.print(`time ${elapsed} ms rate ${rate} rss ${rss}`)
-  if (total--) just.sys.nextTick(() => bench(query))
+  just.print(`time ${elapsed} ms rate ${rate}`)
+  if (--total) just.sys.nextTick(() => bench(query))
 }
 
 bench(createQuery(sql))

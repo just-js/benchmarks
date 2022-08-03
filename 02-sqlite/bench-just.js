@@ -2,14 +2,13 @@ const { Database, constants, sqlite } = require('@sqlite')
 
 const { v2 } = constants
 const defaultFlags = v2.SQLITE_OPEN_READWRITE | v2.SQLITE_OPEN_PRIVATECACHE | 
-  v2.SQLITE_OPEN_NOMUTEX | v2.SQLITE_OPEN_CREATE
+  v2.SQLITE_OPEN_NOMUTEX | v2.SQLITE_OPEN_CREATE | v2.SQLITE_OPEN_MEMORY
 
 const db = (new Database(':memory:')).open(defaultFlags)
 
 db.exec('PRAGMA auto_vacuum = none')
 db.exec('PRAGMA temp_store = memory')
 db.exec('PRAGMA locking_mode = exclusive')
-
 db.exec('PRAGMA user_version = 100')
 
 const sql = 'pragma user_version'
@@ -38,8 +37,7 @@ function bench (query) {
   for (let i = 0; i < runs; i++) query()
   const elapsed = Date.now() - start
   const rate = Math.floor(runs / (elapsed / 1000))
-  const { rss } = just.memoryUsage()
-  just.print(`time ${elapsed} ms rate ${rate} rss ${rss}`)
+  just.print(`time ${elapsed} ms rate ${rate}`)
   if (--total) just.sys.nextTick(() => bench(query))
 }
 
