@@ -1,0 +1,10 @@
+image:
+  file: .gitpod.Dockerfile
+tasks:
+  - init: |
+      cd 02-sqlite
+      tar -zxvf node_modules.tar.gz
+      gcc -O3 -c -Wall -Wextra -Ideps/sqlite/build -o bench.o bench.c
+      gcc -static -mtune=native -march=native -flto -pthread -m64 -s -o bench-c bench.o $JUST_HOME/modules/sqlite/deps/sqlite/build/.libs/libsqlite3.a
+      just build --clean --cleanall --static bench-just.js
+      deno bundle bench-deno.js > bench-deno-bundle.js
