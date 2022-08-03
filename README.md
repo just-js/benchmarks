@@ -39,4 +39,4 @@ xdg-open http://127.0.0.1:8080/results.html
 
 ## Run in Gitpod
 
-# Just [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-908a85?logo=gitpod)](https://gitpod.io/#https://github.com/just-js/benchmark)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-908a85?logo=gitpod)](https://gitpod.io/#https://github.com/just-js/benchmarks)
