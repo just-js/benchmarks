@@ -43,5 +43,9 @@ ENV PATH="${PATH}:/home/gitpod/.node/bin"
 RUN sudo apt clean all
 RUN sudo rm -fr /var/lib/apt/lists
 ENV JUST_VERSION=$JUST_VERSION
+WORKDIR /home/gitpod/.just/just-$JUST_VERSION
+RUN make -C modules/sys library
+RUN make main
+RUN sudo make install install-debug
 WORKDIR /workspace/benchmarks
 CMD ["/bin/bash"]
