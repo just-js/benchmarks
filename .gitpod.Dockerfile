@@ -13,7 +13,6 @@ RUN sudo chown -R gitpod:gitpod /home/gitpod/.just
 RUN make libs
 RUN make modules
 RUN sudo ldconfig
-RUN make -C modules/sys library
 RUN make runtime
 RUN sudo make install install-debug
 RUN sudo mkdir -p /usr/local/lib/just
