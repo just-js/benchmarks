@@ -8,6 +8,7 @@ tasks:
       gcc -O3 -c -Wall -Wextra -Ideps/sqlite/build -o bench.o bench.c
       gcc -static -mtune=native -march=native -flto -pthread -m64 -s -o bench-c bench.o $JUST_HOME/modules/sqlite/deps/sqlite/build/.libs/libsqlite3.a
       rm bench.o
+      make -C /home/gitpod/.just/just-$JUST_VERSION clean runtime && sudo make -C /home/gitpod/.just/just-$JUST_VERSION install
       just build --clean --cleanall --static bench-just.js
-      cp /home/gitpod/.just/$JUST_VERSION/bench-just ./
+      cp /home/gitpod/.just/just-$JUST_VERSION/bench-just ./
       deno bundle bench-deno.js > bench-deno-bundle.js
