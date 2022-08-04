@@ -2,6 +2,10 @@
 
 A set of benchmarks for various common scenarios in JS development.
 
+## Run in Gitpod
+
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-908a85?logo=gitpod)](https://gitpod.io/#https://github.com/just-js/benchmarks)
+
 ## Run locally with Docker
 
 - Build the benchmark docker image
@@ -37,6 +41,8 @@ python3 -m http.server 8080
 xdg-open http://127.0.0.1:8080/results.html
 ```
 
-## Run in Gitpod
+## Results
 
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-908a85?logo=gitpod)](https://gitpod.io/#https://github.com/just-js/benchmarks)
+latest results can be viewed [here](https://just-js.github.io/benchmarks/)
+
+- SQLite Benchmark [Results](https://just-js.github.io/benchmarks/02-sqlite.html)
