@@ -1,4 +1,4 @@
-require('../tools/compat.js')
+require('../compat.js')
 const handlebars = require('./handlebars.js')
 
 const template = `<!DOCTYPE html>

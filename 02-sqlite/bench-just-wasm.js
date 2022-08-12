@@ -1,5 +1,4 @@
 const { fs } = just.library('fs')
-const { net } = just.library('net')
 
 const v2 = {
   SQLITE_OPEN_READONLY        : 0x00000001,  /* Ok for sqlite3_open_v2() */
@@ -266,10 +265,15 @@ const dbName = ':memory:'
 const memory = new WebAssembly.Memory({ initial: 256, maximum: 256, shared: false })  
 const heap = new Uint8Array(memory.buffer)
 const wasi = new WASI(memory, {})
-const buf = just.fs.readFileBytes('lib/quills.wasm')
-const module = new WebAssembly.Module(buf)
+const buf = fs.readFileBytes('lib/quills.wasm')
+
 const imports = { env: { ...environment, memory }, ...wasi.imports}
-const instance = new WebAssembly.Instance(module, imports)
+const instance = WebAssembly.instantiate(buf, imports)
+
+//const module = new WebAssembly.Module(buf)
+//const instance = new WebAssembly.Instance(module, imports)
+
+
 wasi.initialize(instance)
 const ex = instance.exports
 const stack = {
@@ -310,6 +314,15 @@ function createQuery (sql) {
   }
 }
 
+function createQuery2 (sql) {
+  const ptr = new Pointer(memory, stack.alloc(4))
+  const rc = ex.sqlite3_prepare_v2(handle, CString(sql), -1, ptr.p, 0)
+  if (rc !== constants.SQLITE_OK) return
+  const { wasm_get_version } = ex
+  const stmt = ptr.get()
+  return () => wasm_get_version(stmt)
+}
+
 let total = parseInt(just.args[2], 10)
 const runs = parseInt(just.args[3], 10)
 
@@ -322,4 +335,4 @@ function bench (query) {
   if (--total) just.sys.nextTick(() => bench(query))
 }
 
-bench(createQuery(sql))
+bench(createQuery2(sql))

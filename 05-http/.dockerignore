@@ -1,0 +1,10 @@
+bench-usocket
+bench-just
+*.o
+*.sh
+Makefile
+package-lock.json
+*.md
+node_modules
+*.gz
+deps
