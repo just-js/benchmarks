@@ -15,7 +15,7 @@ tasks:
       cd ../05-http
       mkdir deps
       curl -L -o deps/usocket.tar.gz https://github.com/uNetworking/uSockets/archive/v0.8.1.tar.gz
-      tar -zxvf deps/usocket.tar.gz --one-top-level=deps/uSockets-0.8.1
+      tar -zxvf deps/usocket.tar.gz --one-top-level=deps
       make -C deps/uSockets-0.8.1/
       gcc -O3 -c -Wall -Wextra -Ideps/uSockets-0.8.1/src -o bench-usocket.o bench-usocket.c
       gcc -static -mtune=native -march=native -flto -pthread -m64 -s -o bench-usocket bench-usocket.o deps/uSockets-0.8.1/uSockets.a
