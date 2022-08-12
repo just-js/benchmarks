@@ -28,12 +28,18 @@ RUN curl -o node.tar.xz https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSI
 RUN tar -xvf node.tar.xz
 RUN mkdir -p /root/.node/bin && cp node-v$NODE_VERSION-linux-x64/bin/node /root/.node/bin/
 ENV NODE_ENV=production
+WORKDIR /bench/wrk
+RUN curl -L -o wrk.tar.gz https://github.com/wg/wrk/archive/refs/tags/4.2.0.tar.gz
+RUN tar -zxvf wrk.tar.gz
+RUN make -j8 -C wrk-4.2.0/
+RUN mkdir -p /root/.wrk/bin && cp wrk-4.2.0/wrk /root/.wrk/bin/
 WORKDIR /bench
 RUN rm -fr ./*
-ENV PATH="${PATH}:/root/.deno/bin/"
-ENV PATH="${PATH}:/root/.bun/bin/"
-ENV PATH="${PATH}:/root/.node/bin/"
-ENV PATH="${PATH}:/root/.just/bin/"
+ENV PATH="${PATH}:/root/.deno/bin"
+ENV PATH="${PATH}:/root/.bun/bin"
+ENV PATH="${PATH}:/root/.node/bin"
+ENV PATH="${PATH}:/root/.just/bin"
+ENV PATH="${PATH}:/root/.wrk/bin"
 RUN apt clean all
 RUN rm -fr /var/lib/apt/lists
 CMD ["/bin/bash"]

@@ -7,3 +7,4 @@ core
 *.sh
 package-lock.json
 scratch
+tmp
