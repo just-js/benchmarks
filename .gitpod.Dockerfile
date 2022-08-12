@@ -35,11 +35,17 @@ RUN curl -o node.tar.xz https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSI
 RUN tar -xvf node.tar.xz
 RUN mkdir -p /home/gitpod/.node/bin && cp node-v$NODE_VERSION-linux-x64/bin/node /home/gitpod/.node/bin/
 ENV NODE_ENV=production
+WORKDIR /home/gitpod/build
+RUN curl -L -o wrk.tar.gz https://github.com/wg/wrk/archive/refs/tags/4.2.0.tar.gz
+RUN tar -zxvf wrk.tar.gz
+RUN make -j8 -C wrk-4.2.0/
+RUN mkdir -p /home/gitpod/.wrk/bin && cp wrk-4.2.0/wrk /home/gitpod/.wrk/bin/
 WORKDIR /home/gitpod
 RUN rm -fr build
 ENV PATH="${PATH}:/home/gitpod/.deno/bin"
 ENV PATH="${PATH}:/home/gitpod/.bun/bin"
 ENV PATH="${PATH}:/home/gitpod/.node/bin"
+ENV PATH="${PATH}:/home/gitpod/.wrk/bin"
 RUN sudo apt clean all
 RUN sudo rm -fr /var/lib/apt/lists
 ENV JUST_VERSION=$JUST_VERSION
