@@ -21,4 +21,5 @@ tasks:
       gcc -static -mtune=native -march=native -flto -pthread -m64 -s -o bench-usocket bench-usocket.o deps/uSockets-0.8.1/uSockets.a
       rm bench-usocket.o
       just build --clean --static bench-just-dumb-loop.js
+      cp /home/gitpod/.just/just-$JUST_VERSION/bench-just-dumb-loop ./
       cd ..

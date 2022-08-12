@@ -28,6 +28,10 @@ RUN make -C modules/sqlite library vfs
 RUN sudo make -C modules/sqlite install
 RUN make -C modules/ffi library
 RUN sudo make -C modules/ffi install
+RUN make -C modules/http library
+RUN sudo make -C modules/http install
+RUN make -C modules/sha1 library
+RUN sudo make -C modules/sha1 install
 WORKDIR /home/gitpod/build
 RUN sudo chown gitpod:gitpod /home/gitpod/build
 ARG NODE_VERSION=16.16.0
